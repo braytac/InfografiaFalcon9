@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Falcon9</title>
+    <meta charset="UTF-8" />
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"
+    ></script>
+    <style type="text/css">
+      #f9 img {
+        background-color: #040e16;
+        height: 3000px;
+      }
+      .network {
+        width: 45vw;
+        /*background-color: red;*/
+        height: 3000px;
+        display: flex;
+        flex-flow: row;
+        justify-content: end;
+
+        /*border: 1px solid lightgray;*/
+      }
+
+      #contenedor {
+        background: #040e16;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="contenedor">
+      <div id="networkRL" class="network"></div>
+      <div id="f9"><img src="falcon9.png" /></div>
+      <div id="networkLR" class="network"></div>
+    </div>
+    <script>
+      function cargarArchivoJSON(url, callback) {
+        fetch(url)
+          .then((response) => response.json())
+          .then((data) => callback(data))
+          .catch((error) =>
+            console.error("Error al cargar el archivo JSON", error)
+          );
+      }
+
+      function createRectangularNode(direction, id, label) {
+        const color = direction === "RL" ? "#595a5e" : "#0c3144";
+        return {
+          id: id,
+          label: label,
+          shape: "box",
+          color: color,
+          font: {
+            color: "white",
+            align: "center",
+            size: 16,
+            strokeWidth: 1, // px
+          },
+        };
+      }
+      function processDirection(direction, data, nodes, edges) {
+          for (const item of data) {
+            const id = item.id;
+            nodes.push(createRectangularNode(direction, id, id)); // Nodo de primer nivel
+
+            const values = item.datos;
+            let lastNodeId = id;
+            for (let i = 0; i < values.length; i++) {
+              const fecha = values[i].fecha;
+              const lugar = values[i].lugar;
+              const numero = values[i].numero;
+              const orbita = values[i].orbita;
+              const label = numero
+                ? `${fecha} \n (${lugar})`
+                : `${fecha} (${lugar})`;
+              //? `${fecha} \n (${lugar}) \n ${numero}`
+              const childNode = `${id}_child_${i}`;
+              nodes.push(createRectangularNode(direction, childNode, label)); // Nodo de segundo nivel
+              //edges.push({from: lastNodeId, to: childNode, label: numero });
+              edges.push({
+                from: lastNodeId,
+                to: childNode,
+                label: orbita,
+                font: {
+                  color: "white",
+                  size: 12, // px
+                  face: "arial",
+                  background: "grey",
+                  strokeWidth: 0, // px
+                },
+                arrows: {
+                  to: {enabled: true, type: "arrow"},
+                },
+                color: "white",
+              });
+              lastNodeId = childNode;
+            }
+          }
+        }
+
+      const nodesLR = [];
+      const edgesLR = [];
+      const nodesRL = [];
+      const edgesRL = [];
+
+      cargarArchivoJSON("data.json", function (jsonData) {
+        const lrData = jsonData["LR"];
+        const rlData = jsonData["RL"];
+
+        processDirection("LR", lrData, nodesLR, edgesLR);
+        processDirection("RL", rlData, nodesRL, edgesRL);
+
+        //const optionsRL = {};
+        //const optionsLR = {};
+        const optionsRL = {
+          layout: {
+            hierarchical: {
+              direction: "RL",
+              sortMethod: "hubsize",
+
+              levelSeparation: 160,
+            },
+          },
+        };
+        const optionsLR = {
+          layout: {
+            hierarchical: {
+              direction: "LR",
+              sortMethod: "hubsize",
+              levelSeparation: 160,
+            },
+          },
+        };
+
+        const containerLR = document.getElementById("networkLR");
+        const dataLR = {
+          nodes: new vis.DataSet(nodesLR),
+          edges: new vis.DataSet(edgesLR),
+        };
+
+        const containerRL = document.getElementById("networkRL");
+        const dataRL = {
+          nodes: new vis.DataSet(nodesRL),
+          edges: new vis.DataSet(edgesRL),
+        };
+
+        const networkLR = new vis.Network(containerLR, dataLR, optionsLR);
+        const networkRL = new vis.Network(containerRL, dataRL, optionsRL);
+      });
+    </script>
+  </body>
+</html>
