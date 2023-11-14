@@ -1,310 +1,33 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Falcon9</title>
-    <meta charset="UTF-8" />
-    <script
-      type="text/javascript"
-      src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"
-    ></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
-    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 
-    <style type="text/css">
-      html {
-        background-color: #040e16;
-      }
+<head>
+  <title>Falcon9</title>
+  <meta charset="UTF-8" />
+  <style>
+    * {} /* empty stylesheet0 solves the problem */
+  </style>
+    <link href="css/index.css" rel="stylesheet" />
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+  <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+  <script src="js/index.js"></script>
+</head>
 
-      #f9 img {
-        background-color: #040e16;
-        height: 3000px;
-      }
+<body>
+  <div id="downloadButtons">
+    <button id="alternar">Alternar vista WB/Export</button>
+    <button id="downloadPDF">Descargar como PDF</button>
+    <button id="downloadPNG">Descargar como PNG</button>
+  </div>
 
-      .network {
-        width: 100%;
-        /*background-color: red;*/
-        height: 3000px;
-        display: flex;
-        flex-flow: row;
-        justify-content: end;
-
-        /*border: 1px solid lightgray;*/
-      }
-
-      #contenedor {
-        background: #040e16;
-        width: 5500px;
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div id="downloadButtons">
-      <button id="downloadPDF">Descargar como PDF</button>
-      <button id="downloadPNG">Descargar como PNG</button>
+  <div id="contenedor" class="ancho_vis">
+    <div id="networkRL" class="altura_vis alternar_altura network"></div>
+    <div id="f9">
+      <img class="altura_vis alternar_altura" src="falcon9.png" />
     </div>
+    <div id="networkLR" class="altura_vis alternar_altura network"></div>
+  </div>
+</body>
 
-    <div id="contenedor">
-      <div id="networkRL" class="network"></div>
-      <div id="f9"><img src="falcon9.png" /></div>
-      <div id="networkLR" class="network"></div>
-    </div>
-    <script>
-      function cargarArchivoJSON(url, callback) {
-        fetch(url)
-          .then((response) => response.json())
-          .then((data) => callback(data))
-          .catch((error) =>
-            console.error("Error al cargar el archivo JSON", error)
-          );
-      }
-
-      function createSVGNode(childNode, id, inicial, fecha, lugar, numero, direction) {
-        let svg;
-        const color = direction == "RL" ? "#595a5e" : "#0c3144";
-        if (inicial == 1) {
-          svg =
-            '<svg xmlns="http://www.w3.org/2000/svg" width="113" height="95">' +
-            '<polygon points="30,10 70,10 90,50 70,90 30,90 10,50" stroke-width="3" stroke="white" fill="'+color+'"></polygon>' +
-            '<foreignObject x="-5" y="35" width="100%" height="100%">' +
-            '<div xmlns="http://www.w3.org/1999/xhtml" style="color: white; font-size:22px; text-align:center;">' +
-            "<div>" +
-            id +
-            "</div>" +
-            "</div>" +
-            "</foreignObject>" +
-            "</svg>";
-        } else {
-          fecha_lugar =
-            "<div>" +
-            fecha +
-            "</div><div>" +
-            lugar +
-            "</div><div>#" +
-            numero +
-            "</div>";
-          svg =
-            '<svg xmlns="http://www.w3.org/2000/svg" width="183" height="95">' +
-            '<polygon  points="50,10 130,10 170,50 130,90 50,90 10,50" stroke-width="4" stroke="white" fill="'+color+'"></polygon>' +
-            '<foreignObject x="2" y="27" width="100%" height="100%">' +
-            '<div xmlns="http://www.w3.org/1999/xhtml" style="color: white; font-size:14px; text-align:center;">' +
-            "<div>" +
-            fecha_lugar +
-            "</div>" +
-            "</div>" +
-            "</foreignObject>" +
-            "</svg>";
-        }
-        // Rectángulo
-        /*var svg =
-        '<svg xmlns="http://www.w3.org/2000/svg" width="110" height="35">' +
-        '<rect x="0" y="0" width="100%" height="100%" stroke-width="3" stroke="white" fill="gray"></rect>' +
-        '<foreignObject x="4" y="5" width="100%" height="100%">' +
-        '<div xmlns="http://www.w3.org/1999/xhtml" style="color: white; font-size:10px; text-align:center;">' +
-        '<div>' + vehiculo + fecha_lugar + '</div>' +
-        '</div>' +
-        '</foreignObject>' +
-        '</svg>';*/
-        // Rombo
-        /*var svg =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="110" height="65">' +
-          '<polygon points="55,0 100,30 55,60 10,30" stroke-width="3" stroke="white" fill="gray"></polygon>' +
-          '<foreignObject x="4" y="5" width="100%" height="100%">' +
-          '<div xmlns="http://www.w3.org/1999/xhtml" style="color: white; font-size:10px; text-align:center;">' +
-          '<div>' + vehiculo + fecha_lugar + '</div>' +
-          '</div>' +
-          '</foreignObject>' +
-          '</svg>';*/
-        // hexágono regular
-        /*const svg =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="110" height="65">' +
-          '<polygon points="10,35 40,10 70,10 100,35 70,60 40,60" stroke-width="3" stroke="white" fill="gray"></polygon>' +
-          '<foreignObject x="4" y="5" width="100%" height="100%">' +
-          '<div xmlns="http://www.w3.org/1999/xhtml" style="color: white; font-size:14px; text-align:center;">' +
-          '<div>' + vehiculo + fecha_lugar + '</div>' +
-          '</div>' +
-          '</foreignObject>' +
-          '</svg>';*/
-        // otro hexágono regular
-        /*
-          const svg =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="143" height="95">' +
-          '<polygon points="30,10 70,10 90,50 70,90 30,90 10,50" stroke-width="3" stroke="white" fill="gray"></polygon>' +
-          '<foreignObject x="4" y="5" width="100%" height="100%">' +
-          '<div xmlns="http://www.w3.org/1999/xhtml" style="color: white; font-size:14px; text-align:center;">' +
-          '<div>' + vehiculo + fecha_lugar + '</div>' +
-          '</div>' +
-          '</foreignObject>' +
-          '</svg>';
-          */
-
-        const url =
-          "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-
-        return {
-          id: childNode,
-          label: "",
-          image: url,
-          shape: "image",
-        };
-      }
-
-      function processDirection(direction, data, nodes, edges) {
-        for (const item of data) {
-          const id = item.id;
-          //nodes.push(createSVGNode(id, id, "")); // Nodo de primer nivel
-          nodes.push(createSVGNode(id, id, 1, null, null, null, direction)); // Nodo de primer nivel
-          const values = item.datos;
-          let lastNodeId = id;
-          for (let i = 0; i < values.length; i++) {
-            const fecha = values[i].fecha;
-            const lugar = values[i].lugar;
-            const numero = values[i].numero;
-            const orbita = values[i].orbita;
-            //const label = `${fecha} ${lugar}`;
-            const childNode = `${id}_child_${i}`;
-            const inicial = numero ? 1 : 0;
-            nodes.push(createSVGNode(childNode, id, 2, fecha, lugar, numero, direction)); // Nodo de segundo nivel
-            edges.push({
-              from: lastNodeId,
-              to: childNode,
-              label: orbita,
-              font: {
-                color: "white",
-                size: 12, // px
-                face: "arial",
-                background: "grey",
-                strokeWidth: 0, // px
-              },
-              arrows: {
-                to: { enabled: true, type: "arrow" },
-              },
-              color: "white",
-            });
-            lastNodeId = childNode;
-          }
-        }
-      }
-
-      const nodesLR = [];
-      const edgesLR = [];
-      const nodesRL = [];
-      const edgesRL = [];
-
-      cargarArchivoJSON("data.json", function (jsonData) {
-        const lrData = jsonData["LR"];
-        const rlData = jsonData["RL"];
-
-        processDirection("LR", lrData, nodesLR, edgesLR);
-        processDirection("RL", rlData, nodesRL, edgesRL);
-
-        const optionsRL = {
-          layout: {
-            hierarchical: {
-              direction: "RL",
-              sortMethod: "hubsize",
-              levelSeparation: 180,
-            },
-          },
-          physics: false, // Desactiva la física para mantener el zoom fijo
-          interaction: {
-            zoomView: false, // Desactiva el zoom de interacción del usuario
-          },          
-        };
-        const optionsLR = {
-          layout: {
-            hierarchical: {
-              direction: "LR",
-              sortMethod: "hubsize",
-              levelSeparation: 180,
-            },
-          },
-          physics: false, // Desactiva la física para mantener el zoom fijo
-          interaction: {
-            zoomView: false, // Desactiva el zoom de interacción del usuario
-          },
-        };
-
-        const containerLR = document.getElementById("networkLR");
-        const dataLR = {
-          nodes: new vis.DataSet(nodesLR),
-          edges: new vis.DataSet(edgesLR),
-        };
-
-        const containerRL = document.getElementById("networkRL");
-        const dataRL = {
-          nodes: new vis.DataSet(nodesRL),
-          edges: new vis.DataSet(edgesRL),
-        };
-
-        const networkLR = new vis.Network(containerLR, dataLR, optionsLR);
-        const networkRL = new vis.Network(containerRL, dataRL, optionsRL);
-        networkLR.moveTo({ scale: 1.4, position: { x: -20, y: 0 } });
-        networkRL.moveTo({ scale: 1.4, position: { x: -80, y: 0 } });
-      });
-    </script>
-    <script>
-document.getElementById("downloadPNG").addEventListener("click", function () {
-  const container = document.getElementById("contenedor");
-  //const originalZoom = window.innerWidth / container.offsetWidth;
-
-  // Aumenta temporalmente el tamaño de #contenedor para mejorar la calidad de la captura
-  //container.style.width = "3000px"; // Aumenta el ancho
-  //container.style.height = "3000px"; // Aumenta el alto
-
-  // Ajusta el zoom del navegador al 100%
-  document.body.style.transform = `scale(1)`;
-
-  html2canvas(container, { scale: 2 }).then(function (canvas) {
-    const imgData = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = imgData;
-    link.download = "infografia.png";
-    link.click();
-
-    // Restaura el tamaño original de #contenedor
-    container.style.width = "auto";
-    container.style.height = "auto";
-
-    // Restaura el zoom del navegador al 100%
-    document.body.style.transform = "scale(1)";
-  });
-});
-
-
-      document
-        .getElementById("downloadPDF")
-        .addEventListener("click", function () {
-          /*html2canvas(document.body).then(function (canvas) {
-          const imgData = canvas.toDataURL("image/png");
-          const pdf = new jsPDF();
-          pdf.addImage(imgData, "PNG", 0, 0);
-          pdf.save("pagina.pdf");
-        });*/
-          // Landscape export, 2×4 inches
-          const doc = new jsPDF({
-            orientation: "landscape",
-            unit: "in",
-            format: [4, 2],
-          });
-          doc.text("Hello world!", 1, 1);
-          doc.save("two-by-four.pdf");
-        });
-
-      /*document
-      .getElementById("downloadPNG")
-      .addEventListener("click", function () {
-        html2canvas(document.body, { scale: 2 }).then(function (canvas) {
-          const imgData = canvas.toDataURL("image/png");
-          const link = document.createElement("a");
-          link.href = imgData;
-          link.download = "infografia.png";
-          link.click();
-        });
-      });*/
-    </script>
-  </body>
 </html>

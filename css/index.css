@@ -1,0 +1,39 @@
+html {
+  background-color: #040e16;
+}
+#f9 img.altura_export,
+.altura_export {
+  height: 3000px !important;
+}
+.ancho_export {
+  width: 5500px;
+}
+
+.altura_vis {
+  height: 100vh;
+}
+.ancho_vis {
+  /*width: 99vw;*/
+}
+#f9 img {
+  background-color: #040e16;
+  /*height: 3000px;*/
+}
+
+.network {
+  width: 100%;
+  /*background-color: red;*/
+  /*height: 3000px;*/
+  display: flex;
+  flex-flow: row;
+  justify-content: end;
+
+  /*border: 1px solid lightgray;*/
+}
+#contenedor {
+  background: #040e16;
+  /*width: 5500px;*/
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
