@@ -22,8 +22,8 @@ const createSVGNode = (
     direction,
     orbita
 ) => {
-
     let svg;
+    const label = orbita == "" ? "" : "#"+numero;
     const color = direction == "RL" ? "#595a5e" : "#0c3144";
     if (inicial == 1) {
         svg =
@@ -110,7 +110,7 @@ const createSVGNode = (
 
     return {
         id: childNode,
-        label: "#"+numero,
+        label: label,
         font: {
             size: 10,
             color: "white",
