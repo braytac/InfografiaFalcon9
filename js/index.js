@@ -19,7 +19,8 @@ const createSVGNode = (
     fecha,
     lugar,
     numero,
-    direction
+    direction,
+    orbita
 ) => {
 
     let svg;
@@ -40,12 +41,12 @@ const createSVGNode = (
             "</svg>";
     } else {
         fecha_lugar =
-            "<div>" +
+            "<div><b>" +
             fecha +
-            "</div><div>" +
+            "</b></div><div>" +
             lugar +
-            "</div><div>#" +
-            numero +
+            "</div><div>" +
+            orbita +
             "</div>";
         svg =
             '<svg xmlns="http://www.w3.org/2000/svg" width="183" height="95">' +
@@ -109,7 +110,14 @@ const createSVGNode = (
 
     return {
         id: childNode,
-        label: "",
+        label: "#"+numero,
+        font: {
+            size: 10,
+            color: "white",
+            face: "courier",
+            strokeWidth: 0.5,
+            strokeColor: "#ffffff",
+        },
         image: url,
         shape: "image",
     };
@@ -119,7 +127,7 @@ const processDirection = (direction, data, nodes, edges) => {
     for (const item of data) {
         const id = item.id;
         //nodes.push(createSVGNode(id, id, "")); // Nodo de primer nivel
-        nodes.push(createSVGNode(id, id, 1, null, null, null, direction)); // Nodo de primer nivel
+        nodes.push(createSVGNode(id, id, 1, null, null, null, direction, '')); // Nodo de primer nivel
         const values = item.datos;
         let lastNodeId = id;
         for (let i = 0; i < values.length; i++) {
@@ -131,21 +139,21 @@ const processDirection = (direction, data, nodes, edges) => {
             const childNode = `${id}_child_${i}`;
             const inicial = numero ? 1 : 0;
             nodes.push(
-                createSVGNode(childNode, id, 2, fecha, lugar, numero, direction)
+                createSVGNode(childNode, id, 2, fecha, lugar, numero, direction, orbita)
             ); // Nodo de segundo nivel
             edges.push({
                 from: lastNodeId,
                 to: childNode,
-                label: orbita,
+                /*label: orbita,
                 font: {
                     color: "white",
                     size: 12, // px
                     face: "arial",
                     background: "grey",
                     strokeWidth: 0, // px
-                },
+                },*/
                 arrows: {
-                    to: { enabled: true, type: "arrow" },
+                    to: { enabled: false, type: "arrow" },
                 },
                 color: "white",
             });
@@ -209,7 +217,7 @@ const inicializar = (modo) => {
             },
             physics: physics, // Desactivado en modo export la física para mantener el zoom fijo
             interaction: {
-                zoomView: zoomView, // Desactivado en modo export el zoom de interacción del usuario
+                zoomView: true, // ¿? Desactivado en modo export el zoom de interacción del usuario
             },
         };
         const optionsLR = {
@@ -222,7 +230,7 @@ const inicializar = (modo) => {
             },
             physics: physics, // Desactivado en modo export la física para mantener el zoom fijo
             interaction: {
-                zoomView: zoomView, // Desactivado en modo export el zoom de interacción del usuario
+                zoomView: true, // ¿? Desactivado en modo export el zoom de interacción del usuario
             },
         };
 
